@@ -1,0 +1,9 @@
+^(?:dist|\.DS_Store)$
+.*\.(?:aux|h[ip]|o|orig|out|pdf|prof|ps|rej)$
+^tests/(?:qc)$
+
+syntax: glob
+*~
+.*.swp
+.\#*
+\#*

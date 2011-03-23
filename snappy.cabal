@@ -1,0 +1,36 @@
+name:           snappy
+version:        0.1.0.0
+homepage:       http://github.com/mailrank/snappy
+bug-reports:    http://github.com/mailrank/snappy/issues
+synopsis:
+  Bindings to the Google Snappy library for fast compression/decompression
+description:
+  This library provides efficient Haskell bindings to Google's Snappy
+  compression and decompression library.
+license:        BSD3
+license-file:   LICENSE
+author:         Bryan O'Sullivan <bos@mailrank.com>
+maintainer:     Bryan O'Sullivan <bos@mailrank.com>
+copyright:      Copyright 2011 MailRank, Inc.
+category:       Codec, Compression
+build-type:     Simple
+cabal-version:  >= 1.6
+extra-source-files:
+  tests/Makefile
+  tests/Properties.hs
+
+library
+  c-sources:       cbits/hs_snappy.cpp
+  include-dirs:    include
+  extra-libraries: snappy stdc++
+
+  build-depends:     base < 5, bytestring
+  if impl(ghc >= 6.10)
+    build-depends:   base >= 4
+
+  exposed-modules:
+    Codec.Compression.Snappy
+
+source-repository head
+  type:     git
+  location: http://github.com/mailrank/snappy
