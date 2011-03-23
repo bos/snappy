@@ -1,5 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
+-- |
 -- Module:      Codec.Compression.Snappy
 -- Copyright:   (c) 2011 MailRank, Inc.
 -- License:     Apache

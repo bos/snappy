@@ -5,8 +5,8 @@ bug-reports:    http://github.com/mailrank/snappy/issues
 synopsis:
   Bindings to the Google Snappy library for fast compression/decompression
 description:
-  This library provides efficient Haskell bindings to Google's Snappy
-  compression and decompression library.
+  This library provides fast, pure Haskell bindings to Google's Snappy
+  compression and decompression library: <http://code.google.com/p/snappy/>
 license:        BSD3
 license-file:   LICENSE
 author:         Bryan O'Sullivan <bos@mailrank.com>
