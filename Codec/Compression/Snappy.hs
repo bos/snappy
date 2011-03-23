@@ -8,9 +8,12 @@
 -- Stability:   experimental
 -- Portability: portable
 --
--- This library provides fast, pure Haskell bindings to Google's
+-- This module provides fast, pure Haskell bindings to Google's
 -- Snappy compression and decompression library:
 -- <http://code.google.com/p/snappy/>
+--
+-- These functions operate on strict bytestrings, and thus use as much
+-- memory as both the entire compressed and uncompressed data.
 
 module Codec.Compression.Snappy
     (
