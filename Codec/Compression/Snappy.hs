@@ -1,5 +1,16 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
+-- Module:      Codec.Compression.Snappy
+-- Copyright:   (c) 2011 MailRank, Inc.
+-- License:     Apache
+-- Maintainer:  Bryan O'Sullivan <bos@mailrank.com>
+-- Stability:   experimental
+-- Portability: portable
+--
+-- This library provides fast, pure Haskell bindings to Google's
+-- Snappy compression and decompression library:
+-- <http://code.google.com/p/snappy/>
+
 module Codec.Compression.Snappy
     (
       compress
@@ -18,6 +29,7 @@ import Foreign.Storable (peek)
 import System.IO.Unsafe (unsafePerformIO)
 import qualified Data.ByteString as B
 
+-- | Compress data into the Snappy format.
 compress :: ByteString -> ByteString
 compress bs@(PS sfp off len) = unsafePerformIO $ do
   let dlen0 = fromIntegral . c_MaxCompressedLength . fromIntegral $ len
@@ -28,6 +40,10 @@ compress bs@(PS sfp off len) = unsafePerformIO $ do
         c_RawCompress (sptr `plusPtr` off) (fromIntegral len) dptr dlenPtr
         (PS dfp 0 . fromIntegral) `fmap` peek dlenPtr
 
+-- | Decompress data in the Snappy format.
+--
+-- If the input is not compressed or is corrupt, an exception will be
+-- thrown.
 decompress :: ByteString -> ByteString
 decompress (PS sfp off slen) = unsafePerformIO $
   withForeignPtr sfp $ \sptr0 -> do
