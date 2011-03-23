@@ -1,9 +1,12 @@
 ghc := ghc
 
-all: qc
+all: qc snappy
 
 qc: Properties.hs
 	$(ghc) --make -o $@ $^
 
+snappy: Snappy.hs
+	$(ghc) -O --make -o $@ $^
+
 clean:
-	-rm -f qc *.o *.hi
+	-rm -f qc snappy *.o *.hi
