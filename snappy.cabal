@@ -16,6 +16,8 @@ category:       Codec, Compression
 build-type:     Simple
 cabal-version:  >= 1.6
 extra-source-files:
+  README.md
+  include/hs_snappy.h
   tests/Makefile
   tests/Properties.hs
 
