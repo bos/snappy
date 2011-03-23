@@ -53,7 +53,8 @@ snappy Command{..} f = do
   evaluate $ if action == Compress then c 0 bs else d 0 bs
   time <- (fromRational . toRational . flip diffUTCTime start) `fmap`
           getCurrentTime
-  return $ fromIntegral (B.length bs) * fromIntegral count / (time * 1048576.0)
+  return (fromIntegral (B.length bs) * fromIntegral count / (time * 1048576.0),
+          (B.length (S.compress bs0) * 100) `div` B.length bs0)
 
 gzip Command{..} f = do
   bs0 <- L.readFile f
@@ -72,11 +73,13 @@ gzip Command{..} f = do
   evaluate $ if action == Compress then c 0 bs else d 0 bs
   time <- (fromRational . toRational . flip diffUTCTime start) `fmap`
           getCurrentTime
-  return $ fromIntegral len * fromIntegral count / (time * 1048576.0)
+  return (fromIntegral len * fromIntegral count / (time * 1048576.0),
+          fromIntegral $ (L.length (compress bs0) * 100) `div` L.length bs0)
 
 main = do
   c@Command{..} <- cmdArgs command
   forM_ files $ \f -> do
-    mbSec <- (if codec == Snappy then snappy else gzip) c f
+    (mbSec, ratio) <- (if codec == Snappy then snappy else gzip) c f
     putStrLn $ show codec ++ " " ++ show action ++ " " ++
-               show f ++ ": " ++ show (round mbSec) ++ " MB/sec"
+               show f ++ ": " ++ show (round mbSec) ++ " MB/sec, " ++
+               show (100 - ratio) ++ "% smaller"
