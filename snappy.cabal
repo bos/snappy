@@ -24,6 +24,7 @@ extra-source-files:
 
 library
   c-sources:       cbits/hs_snappy.cpp
+  cc-options: -g -O0
   include-dirs:    include
   extra-libraries: snappy stdc++
 
@@ -33,6 +34,10 @@ library
 
   exposed-modules:
     Codec.Compression.Snappy
+    Codec.Compression.Snappy.Lazy
+
+  other-modules:
+    Codec.Compression.Snappy.Internal
 
 source-repository head
   type:     git

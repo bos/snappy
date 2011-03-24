@@ -21,10 +21,11 @@ module Codec.Compression.Snappy
     , decompress
     ) where
 
-import Control.Monad (unless)
+import Codec.Compression.Snappy.Internal (maxCompressedLength)
+import Control.Monad (when)
 import Data.ByteString.Internal (ByteString(..), mallocByteString)
 import Data.Word (Word8)
-import Foreign.C.Types (CSize)
+import Foreign.C.Types (CInt, CSize)
 import Foreign.ForeignPtr (withForeignPtr)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Marshal.Utils (with)
@@ -36,7 +37,7 @@ import qualified Data.ByteString as B
 -- | Compress data into the Snappy format.
 compress :: ByteString -> ByteString
 compress bs@(PS sfp off len) = unsafePerformIO $ do
-  let dlen0 = fromIntegral . c_MaxCompressedLength . fromIntegral $ len
+  let dlen0 = maxCompressedLength len
   dfp <- mallocByteString dlen0
   withForeignPtr sfp $ \sptr ->
     withForeignPtr dfp $ \dptr ->
@@ -53,24 +54,21 @@ decompress (PS sfp off slen) = unsafePerformIO $
   withForeignPtr sfp $ \sptr0 -> do
     let sptr = sptr0 `plusPtr` off
         len = fromIntegral slen
+    let check ok = when (ok == 0) $
+                   fail "Codec.Compression.Snappy.decompress: corrupt input"
     alloca $ \dlenPtr -> do
-      ok0 <- c_GetUncompressedLength sptr len dlenPtr
-      unless ok0 $ error "Codec.Compression.Snappy.decompress: corrupt input"
+      check =<< c_GetUncompressedLength sptr len dlenPtr
       dlen <- fromIntegral `fmap` peek dlenPtr
       dfp <- mallocByteString dlen
       withForeignPtr dfp $ \dptr -> do
-        ok1 <- c_RawUncompress sptr len dptr
-        unless ok1 $ error "Codec.Compression.Snappy.decompress: corrupt input"
+        check =<< c_RawUncompress sptr len dptr
         return (PS dfp 0 dlen)
-
-foreign import ccall unsafe "hs_snappy.h _hsnappy_MaxCompressedLength"
-    c_MaxCompressedLength :: CSize -> CSize
 
 foreign import ccall unsafe "hs_snappy.h _hsnappy_RawCompress"
     c_RawCompress :: Ptr a -> CSize -> Ptr Word8 -> Ptr CSize -> IO ()
 
 foreign import ccall unsafe "hs_snappy.h _hsnappy_GetUncompressedLength"
-    c_GetUncompressedLength :: Ptr a -> CSize -> Ptr CSize -> IO Bool
+    c_GetUncompressedLength :: Ptr a -> CSize -> Ptr CSize -> IO CInt
 
 foreign import ccall unsafe "hs_snappy.h _hsnappy_RawUncompress"
-    c_RawUncompress :: Ptr a -> CSize -> Ptr Word8 -> IO Bool
+    c_RawUncompress :: Ptr a -> CSize -> Ptr Word8 -> IO CInt
