@@ -8,8 +8,18 @@
 -- Stability:   experimental
 -- Portability: portable
 --
--- This module provides fast, pure compression and decompression
--- of Snappy data.
+-- This module provides fast, pure zero-copy compression and
+-- decompression of lazy 'ByteString' data using the Snappy format.
+--
+-- Although these functions operate on lazy 'ByteString's, they
+-- consume the data /strictly/: they do not produce any output until
+-- they have consumed all of the input, and they produce the output in
+-- a single large chunk.
+--
+-- If your data is already in the form of a lazy 'ByteString', it is
+-- likely more efficient to use these functions than to convert your
+-- data to and from strict ByteStrings, as you can avoid the
+-- additional allocation and copying that would entail.
 
 module Codec.Compression.Snappy.Lazy
     (
@@ -20,19 +30,19 @@ module Codec.Compression.Snappy.Lazy
 #include "hs_snappy.h"
 
 import Codec.Compression.Snappy.Internal (maxCompressedLength)
-import qualified Codec.Compression.Snappy as S
-import Data.ByteString.Lazy.Internal
-import qualified Data.ByteString.Lazy as L
-import Data.Word (Word8)
 import Data.ByteString.Internal hiding (ByteString)
-import qualified Data.ByteString as B
+import Data.ByteString.Lazy.Internal (ByteString(..))
+import Data.Word (Word8)
 import Foreign.C.Types (CInt, CSize)
-import Foreign.Storable
+import Foreign.ForeignPtr (touchForeignPtr, withForeignPtr)
+import Foreign.Marshal.Array (withArray)
+import Foreign.Marshal.Utils (with)
 import Foreign.Ptr (Ptr, plusPtr)
-import Foreign.ForeignPtr (withForeignPtr)
+import Foreign.Storable (Storable(..))
 import System.IO.Unsafe (unsafePerformIO)
-import Foreign.Marshal.Array
-import Foreign.Marshal.Utils
+import qualified Codec.Compression.Snappy as S
+import qualified Data.ByteString as B
+import qualified Data.ByteString.Lazy as L
 
 newtype BS = BS B.ByteString
 
