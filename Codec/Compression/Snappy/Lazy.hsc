@@ -66,6 +66,7 @@ compress bs = unsafePerformIO $ do
       with (fromIntegral dlen0) $ \dlenPtr -> do
         c_CompressChunks chunkPtr (fromIntegral (length chunks))
                          (fromIntegral len) dptr dlenPtr
+        foldr (\(PS fp _ _) _ -> touchForeignPtr fp) (return ()) chunks
         dlen <- fromIntegral `fmap` peek dlenPtr
         if dlen == 0
           then return Empty
