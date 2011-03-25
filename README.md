@@ -4,6 +4,10 @@ snappy is a fast Haskell library for working with data compressed
 using Google's Snappy format.  It is implemented as a binding to the
 [Snappy library](http://code.google.com/p/snappy/).
 
+It implements zero-copy compression and decompression of both strict
+and lazy [bytestring](http://hackage.haskell.org/package/bytestring)s,
+the standard Haskell types for managing binary data efficiently.
+
 # Join in!
 
 We are happy to receive bug reports, fixes, documentation enhancements,
