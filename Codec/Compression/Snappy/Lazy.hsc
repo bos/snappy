@@ -29,56 +29,89 @@ module Codec.Compression.Snappy.Lazy
 
 #include "hs_snappy.h"
 
-import Codec.Compression.Snappy.Internal (maxCompressedLength)
+import Codec.Compression.Snappy.Internal (check, maxCompressedLength)
+import Control.Exception (bracket)
 import Data.ByteString.Internal hiding (ByteString)
 import Data.ByteString.Lazy.Internal (ByteString(..))
-import Data.Word (Word8)
+import Data.Word (Word8, Word32)
 import Foreign.C.Types (CInt, CSize)
 import Foreign.ForeignPtr (touchForeignPtr, withForeignPtr)
+import Foreign.Marshal.Alloc (alloca)
 import Foreign.Marshal.Array (withArray)
 import Foreign.Marshal.Utils (with)
 import Foreign.Ptr (Ptr, plusPtr)
 import Foreign.Storable (Storable(..))
 import System.IO.Unsafe (unsafePerformIO)
-import qualified Codec.Compression.Snappy as S
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 
 newtype BS = BS B.ByteString
+
+data BSSource
 
 instance Storable BS where
     sizeOf _    = (#size struct BS)
     alignment _ = alignment (undefined :: Ptr CInt)
     poke ptr (BS (PS fp off len)) = withForeignPtr fp $ \p -> do
       (#poke struct BS, ptr) ptr (p `plusPtr` off)
+      (#poke struct BS, off) ptr (0::CSize)
       (#poke struct BS, len) ptr len
     {-# INLINE poke #-}
 
 -- | Compress data into the Snappy format.
 compress :: ByteString -> ByteString
-compress bs = unsafePerformIO $ do
-  let len = fromIntegral (L.length bs)
+compress bs = unsafePerformIO . withChunks bs $ \chunkPtr numChunks len -> do
   let dlen0 = maxCompressedLength len
   dfp <- mallocByteString dlen0
   withForeignPtr dfp $ \dptr -> do
-    let chunks = L.toChunks bs
-    withArray (map BS chunks) $ \chunkPtr ->
-      with (fromIntegral dlen0) $ \dlenPtr -> do
-        c_CompressChunks chunkPtr (fromIntegral (length chunks))
-                         (fromIntegral len) dptr dlenPtr
-        foldr (\(PS fp _ _) _ -> touchForeignPtr fp) (return ()) chunks
-        dlen <- fromIntegral `fmap` peek dlenPtr
-        if dlen == 0
-          then return Empty
-          else return (Chunk (PS dfp 0 dlen) Empty)
+    with (fromIntegral dlen0) $ \dlenPtr -> do
+      c_CompressChunks chunkPtr (fromIntegral numChunks)
+                       (fromIntegral len) dptr dlenPtr
+      dlen <- fromIntegral `fmap` peek dlenPtr
+      if dlen == 0
+        then return Empty
+        else return (Chunk (PS dfp 0 dlen) Empty)
 
 -- | Decompress data in the Snappy format.
 --
 -- If the input is not compressed or is corrupt, an exception will be
 -- thrown.
 decompress :: ByteString -> ByteString
-decompress = L.fromChunks . (:[]) . S.decompress . B.concat . L.toChunks
+decompress bs = unsafePerformIO . withChunks bs $ \chunkPtr numChunks len ->
+  bracket (c_NewSource chunkPtr (fromIntegral numChunks) (fromIntegral len))
+          c_DeleteSource $ \srcPtr -> do
+    alloca $ \dlenPtr -> do
+      check "Lazy.decompress" $ c_GetUncompressedLengthChunks srcPtr dlenPtr
+      dlen <- fromIntegral `fmap` peek dlenPtr
+      if dlen == 0
+        then return L.empty
+        else do
+          dfp <- mallocByteString dlen
+          withForeignPtr dfp $ \dptr -> do
+            check "Lazy.decompress" $ c_UncompressChunks srcPtr dptr
+            return (Chunk (PS dfp 0 dlen) Empty)
+
+withChunks :: ByteString -> (Ptr BS -> Int -> Int -> IO a) -> IO a
+withChunks bs act = do
+  let len = fromIntegral (L.length bs)
+  let chunks = L.toChunks bs
+  r <- withArray (map BS chunks) $ \chunkPtr ->
+       act chunkPtr (length chunks) len
+  foldr (\(PS fp _ _) _ -> touchForeignPtr fp) (return ()) chunks
+  return r
 
 foreign import ccall unsafe "hs_snappy.h _hsnappy_CompressChunks"
     c_CompressChunks :: Ptr BS -> CSize -> CSize -> Ptr Word8 -> Ptr CSize
                      -> IO ()
+
+foreign import ccall unsafe "hs_snappy.h _hsnappy_NewSource"
+    c_NewSource :: Ptr BS -> CSize -> CSize -> IO (Ptr BSSource)
+
+foreign import ccall unsafe "hs_snappy.h _hsnappy_DeleteSource"
+    c_DeleteSource :: Ptr BSSource -> IO ()
+
+foreign import ccall unsafe "hs_snappy.h _hsnappy_UncompressChunks"
+    c_UncompressChunks :: Ptr BSSource -> Ptr Word8 -> IO Int
+
+foreign import ccall unsafe "hs_snappy.h _hsnappy_GetUncompressedLengthChunks"
+    c_GetUncompressedLengthChunks :: Ptr BSSource -> Ptr Word32 -> IO Int

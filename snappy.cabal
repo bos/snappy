@@ -24,13 +24,15 @@ extra-source-files:
 
 library
   c-sources:       cbits/hs_snappy.cpp
-  cc-options: -g -O0
   include-dirs:    include
   extra-libraries: snappy stdc++
 
-  build-depends:     base < 5, bytestring
+  cc-options:      -Wall
+  ghc-options:     -Wall
+
+  build-depends:   base < 5, bytestring
   if impl(ghc >= 6.10)
-    build-depends:   base >= 4
+    build-depends: base >= 4
 
   exposed-modules:
     Codec.Compression.Snappy
