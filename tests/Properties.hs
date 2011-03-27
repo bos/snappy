@@ -27,9 +27,8 @@ instance Arbitrary (Compressed B.ByteString) where
     arbitrary = (Compressed . B.compress) <$> arbitrary
 
 compress_eq n bs = L.fromChunks [B.compress bs] == L.compress (rechunk n bs)
-decompress_eq n bs0 =
+decompress_eq n (Compressed bs) =
     L.fromChunks [B.decompress bs] == L.decompress (rechunk n bs)
-  where bs = B.compress bs0
 
 rechunk :: Int -> B.ByteString -> L.ByteString
 rechunk n = L.fromChunks . go

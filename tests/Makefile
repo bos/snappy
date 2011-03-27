@@ -1,13 +1,13 @@
 ghc := ghc
 ghcflags := -threaded -O
 
-all: qc snappy
+all: qc speedy
 
 qc: Properties.hs
 	$(ghc) $(ghcflags) --make -o $@ $^
 
-snappy: Snappy.hs
+speedy: Speedy.hs
 	$(ghc) $(ghcflags) -O --make -o $@ $^
 
 clean:
-	-rm -f qc snappy *.o *.hi
+	-rm -f qc speedy *.o *.hi
