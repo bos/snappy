@@ -1,13 +1,18 @@
+pkgs := snappy
+
 ghc := ghc
-ghcflags := -threaded -O
+ghcflags := -Wall -threaded -O
 
-all: qc speedy
+all: bm qc speedy
 
-qc: Properties.hs
+bm: Functions.hs Benchmarks.hs
+	$(ghc) $(ghcflags) --make -o $@ $^
+
+qc: Functions.hs Properties.hs
 	$(ghc) $(ghcflags) --make -o $@ $^
 
 speedy: Speedy.hs
-	$(ghc) $(ghcflags) -O --make -o $@ $^
+	$(ghc) $(ghcflags) --make -o $@ $^
 
 clean:
-	-rm -f qc speedy *.o *.hi
+	-rm -f bm qc speedy *.o *.hi

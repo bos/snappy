@@ -1,6 +1,6 @@
 ^(?:dist|\.DS_Store)$
 .*\.(?:aux|dSYM|h[ip]|o|orig|out|pdf|prof|ps|rej)$
-^tests/(?:qc|speedy)$
+^tests/(?:bm|qc|speedy)$
 
 syntax: glob
 *~
