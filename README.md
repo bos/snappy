@@ -14,11 +14,11 @@ We are happy to receive bug reports, fixes, documentation enhancements,
 and other improvements.
 
 Please report bugs via the
-[github issue tracker](http://github.com/mailrank/snappy/issues).
+[github issue tracker](http://github.com/bos/snappy/issues).
 
-Master [git repository](http://github.com/mailrank/snappy):
+Master [git repository](http://github.com/bos/snappy):
 
-* `git clone git://github.com/mailrank/snappy.git`
+* `git clone git://github.com/bos/snappy.git`
 
 There's also a [Mercurial mirror](http://bitbucket.org/bos/snappy):
 
@@ -30,4 +30,4 @@ Authors
 -------
 
 This library is written and maintained by Bryan O'Sullivan,
-<bos@mailrank.com>.
+<bos@serpentine.com>.
