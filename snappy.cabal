@@ -55,13 +55,10 @@ test-suite tests
   build-depends:
     base < 5,
     bytestring,
-    cmdargs,
     QuickCheck >= 2.4,
     snappy,
     test-framework,
-    test-framework-quickcheck2,
-    time,
-    zlib
+    test-framework-quickcheck2
 
 source-repository head
   type:     git
