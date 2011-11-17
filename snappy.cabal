@@ -20,7 +20,7 @@ extra-source-files:
   include/hs_snappy.h
   tests/Makefile
   tests/Properties.hs
-  tests/Snappy.hs
+  tests/Speedy.hs
 
 library
   c-sources:       cbits/hs_snappy.cpp
