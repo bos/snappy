@@ -1,4 +1,4 @@
-^(?:dist|\.DS_Store)$
+^(?:cabal-dev|dist|\.DS_Store)$
 .*\.(?:aux|dSYM|h[ip]|o|orig|out|pdf|prof|ps|rej)$
 ^tests/(?:bm|qc|speedy)$
 
