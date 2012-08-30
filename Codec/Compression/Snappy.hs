@@ -24,7 +24,7 @@ module Codec.Compression.Snappy
 import Codec.Compression.Snappy.Internal (check, maxCompressedLength)
 import Data.ByteString.Internal (ByteString(..), mallocByteString)
 import Data.Word (Word8, Word32)
-import Foreign.C.Types (CInt, CSize)
+import Foreign.C.Types (CInt(..), CSize(..))
 import Foreign.ForeignPtr (withForeignPtr)
 import Foreign.Marshal.Alloc (alloca)
 import Foreign.Marshal.Utils (with)

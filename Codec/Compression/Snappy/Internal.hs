@@ -22,7 +22,7 @@ module Codec.Compression.Snappy.Internal
     ) where
 
 import Control.Monad (when)
-import Foreign.C.Types (CSize)
+import Foreign.C.Types (CSize(..))
 
 maxCompressedLength :: Int -> Int
 maxCompressedLength = fromIntegral . c_MaxCompressedLength . fromIntegral
