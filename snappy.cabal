@@ -45,6 +45,7 @@ test-suite tests
   type:           exitcode-stdio-1.0
   hs-source-dirs: tests
   main-is:        Properties.hs
+  other-modules:  Functions
 
   ghc-options:
     -Wall -threaded -O0 -rtsopts
