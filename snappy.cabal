@@ -25,7 +25,15 @@ extra-source-files:
 library
   c-sources:       cbits/hs_snappy.cpp
   include-dirs:    include
-  extra-libraries: snappy stdc++
+  extra-libraries: snappy
+
+  if os(windows)
+    if arch(x86_64)
+      extra-libraries: stdc++-6 gcc_s_seh-1
+    else
+      extra-libraries: stdc++-6 gcc_s_dw2-1
+  else
+    extra-libraries: stdc++
 
   cc-options:      -Wall
   ghc-options:     -Wall
