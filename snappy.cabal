@@ -1,3 +1,4 @@
+cabal-version:  2.2
 name:           snappy
 version:        0.2.0.2
 homepage:       http://github.com/bos/snappy
@@ -7,14 +8,13 @@ synopsis:
 description:
   This library provides fast, pure Haskell bindings to Google's Snappy
   compression and decompression library: <http://code.google.com/p/snappy/>
-license:        BSD3
+license:        BSD-3-Clause
 license-file:   LICENSE
 author:         Bryan O'Sullivan <bos@serpentine.com>
 maintainer:     Bryan O'Sullivan <bos@serpentine.com>
 copyright:      Copyright 2011 MailRank, Inc.
 category:       Codec, Compression
 build-type:     Simple
-cabal-version:  >= 1.8
 extra-source-files:
   README.md
   include/hs_snappy.h
@@ -23,11 +23,11 @@ extra-source-files:
   tests/Speedy.hs
 
 library
-  c-sources:       cbits/hs_snappy.cpp
+  cxx-sources:       cbits/hs_snappy.cpp
   include-dirs:    include
   extra-libraries: snappy stdc++
 
-  cc-options:      -Wall
+  cxx-options:     -Wall -std=c++11
   ghc-options:     -Wall
 
   build-depends:   base < 5, bytestring
