@@ -28,7 +28,7 @@ int _hsnappy_RawUncompress(const char *compressed, size_t compressed_length,
   return RawUncompress(compressed, compressed_length, uncompressed);
 }
 
-class BSSource : public Source
+struct BSSource : public Source
 {
 public:
   BSSource(BS *chunks, size_t nchunks, size_t size)
