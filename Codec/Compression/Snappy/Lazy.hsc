@@ -57,6 +57,7 @@ instance Storable BS where
       (#poke struct BS, off) ptr (0::CSize)
       (#poke struct BS, len) ptr len
     {-# INLINE poke #-}
+    peek _ = undefined -- To silence the warning of -Wmissing-method
 
 -- | Compress data into the Snappy format.
 compress :: ByteString -> ByteString
