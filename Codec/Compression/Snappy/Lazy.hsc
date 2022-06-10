@@ -31,7 +31,7 @@ module Codec.Compression.Snappy.Lazy
 
 import Codec.Compression.Snappy.Internal (check, maxCompressedLength)
 import Control.Exception (bracket)
-import Data.ByteString.Internal hiding (ByteString)
+import Data.ByteString.Internal hiding (ByteString, BS)
 import Data.ByteString.Lazy.Internal (ByteString(..))
 import Data.Word (Word8, Word32)
 import Foreign.C.Types (CInt(..), CSize(..))
