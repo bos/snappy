@@ -31,8 +31,7 @@ module Codec.Compression.Snappy.Lazy
 
 import Codec.Compression.Snappy.Internal (check, maxCompressedLength)
 import Control.Exception (bracket)
-import Data.ByteString.Internal hiding (ByteString)
-import Data.ByteString.Lazy.Internal (ByteString(..))
+import Data.ByteString.Internal (ByteString(PS),mallocByteString)
 import Data.Word (Word8, Word32)
 import Foreign.C.Types (CInt(..), CSize(..))
 import Foreign.ForeignPtr (touchForeignPtr, withForeignPtr)
@@ -42,6 +41,7 @@ import Foreign.Marshal.Utils (with)
 import Foreign.Ptr (Ptr, plusPtr)
 import Foreign.Storable (Storable(..))
 import System.IO.Unsafe (unsafePerformIO)
+import qualified Data.ByteString.Lazy.Internal as LI
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as L
 
@@ -57,9 +57,10 @@ instance Storable BS where
       (#poke struct BS, off) ptr (0::CSize)
       (#poke struct BS, len) ptr len
     {-# INLINE poke #-}
+    peek _ = undefined -- To silence the warning of -Wmissing-method
 
 -- | Compress data into the Snappy format.
-compress :: ByteString -> ByteString
+compress :: L.ByteString -> L.ByteString
 compress bs = unsafePerformIO . withChunks bs $ \chunkPtr numChunks len -> do
   let dlen0 = maxCompressedLength len
   dfp <- mallocByteString dlen0
@@ -69,14 +70,14 @@ compress bs = unsafePerformIO . withChunks bs $ \chunkPtr numChunks len -> do
                        (fromIntegral len) dptr dlenPtr
       dlen <- fromIntegral `fmap` peek dlenPtr
       if dlen == 0
-        then return Empty
-        else return (Chunk (PS dfp 0 dlen) Empty)
+        then return LI.Empty
+        else return (LI.Chunk (PS dfp 0 dlen) LI.Empty)
 
 -- | Decompress data in the Snappy format.
 --
 -- If the input is not compressed or is corrupt, an exception will be
 -- thrown.
-decompress :: ByteString -> ByteString
+decompress :: L.ByteString -> L.ByteString
 decompress bs = unsafePerformIO . withChunks bs $ \chunkPtr numChunks len ->
   bracket (c_NewSource chunkPtr (fromIntegral numChunks) (fromIntegral len))
           c_DeleteSource $ \srcPtr -> do
@@ -89,9 +90,9 @@ decompress bs = unsafePerformIO . withChunks bs $ \chunkPtr numChunks len ->
           dfp <- mallocByteString dlen
           withForeignPtr dfp $ \dptr -> do
             check "Lazy.decompress" $ c_UncompressChunks srcPtr dptr
-            return (Chunk (PS dfp 0 dlen) Empty)
+            return (LI.Chunk (PS dfp 0 dlen) LI.Empty)
 
-withChunks :: ByteString -> (Ptr BS -> Int -> Int -> IO a) -> IO a
+withChunks :: L.ByteString -> (Ptr BS -> Int -> Int -> IO a) -> IO a
 withChunks bs act = do
   let len = fromIntegral (L.length bs)
   let chunks = L.toChunks bs
